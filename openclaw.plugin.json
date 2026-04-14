@@ -1,0 +1,10 @@
+{
+  "name": "deaiify",
+  "version": "1.0.0",
+  "description": "Intercepts and rewrites LLM responses containing em-dashes and en-dashes",
+  "entry": "dist/index.js",
+  "hooks": [
+    "message_sending",
+    "before_agent_reply"
+  ]
+}

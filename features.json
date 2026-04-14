@@ -1,0 +1,42 @@
+{
+  "project": "deaiify",
+  "framework": "STOP (Spec > Task > Observe > Patch)",
+  "updated": "2026-04-14",
+  "phases": [
+    {
+      "id": "P0",
+      "name": "Core Plugin Build",
+      "status": "complete",
+      "features": [
+        {
+          "id": "P0-F1",
+          "name": "message_sending hook",
+          "description": "Intercepts outbound messages, tests for dash pattern, cancels delivery if match found",
+          "status": "complete",
+          "scenarios": []
+        },
+        {
+          "id": "P0-F2",
+          "name": "before_agent_reply hook",
+          "description": "Injects correction prompt after cancellation to trigger LLM rewrite",
+          "status": "complete",
+          "scenarios": []
+        },
+        {
+          "id": "P0-F3",
+          "name": "Plugin entry and config schema",
+          "description": "definePluginEntry with enabled, maxRetries, channels, correctionPrompt config",
+          "status": "complete",
+          "scenarios": []
+        },
+        {
+          "id": "P0-F4",
+          "name": "README with Billy Mays energy",
+          "description": "Full infomercial-style README with ASCII art, testimonials, and technical accuracy",
+          "status": "complete",
+          "scenarios": []
+        }
+      ]
+    }
+  ]
+}

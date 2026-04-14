@@ -1,0 +1,19 @@
+{
+  "name": "deaiify",
+  "version": "1.0.0",
+  "description": "OpenClaw plugin that intercepts and rewrites LLM responses containing em-dashes and en-dashes",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "peerDependencies": {
+    "@openclaw/plugin-sdk": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@openclaw/plugin-sdk": "*"
+  },
+  "license": "MIT"
+}
