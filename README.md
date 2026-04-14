@@ -41,13 +41,13 @@ This isn't a find-and-replace. This is a FULL ARCHITECTURAL INTERVENTION. We don
 
 ```
   ┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-  │  LLM writes  │────>│  HOOK 1:     │────>│  Dashes found?  │
-  │  a response  │     │  message_    │     │                 │
-  │              │     │  sending     │     │  YES: CANCEL IT │
+  │  LLM writes │────>│  HOOK 1:     │────>│  Dashes found?  │
+  │  a response │     │  message_    │     │                 │
+  │             │     │  sending     │     │  YES: CANCEL IT │
   └─────────────┘     └──────────────┘     │  NO: SHIP IT    │
-                                            └────────┬────────┘
-                                                     │ (cancelled)
-                                                     v
+                                           └────────┬────────┘
+                                                    │ (cancelled)
+                                                    v
                         ┌──────────────┐     ┌─────────────────┐
                         │  HOOK 2:     │────>│  Inject prompt: │
                         │  before_     │     │  "REWRITE THAT  │
