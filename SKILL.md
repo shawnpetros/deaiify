@@ -1,8 +1,15 @@
 ---
 name: deaiify
-description: Ban LLM em-dashes and en-dashes before delivery, rewrite via embedded LLM.
+description: "Ban LLM em-dashes and en-dashes before delivery, rewrite via embedded LLM."
 homepage: https://github.com/shawnpetros/deaiify
-metadata: {"openclaw":{"emoji":"🚫","plugin":true}}
+metadata:
+  {
+    "openclaw":
+      {
+        "emoji": "🚫",
+        "plugin": true
+      }
+  }
 ---
 
 # deAIify Plugin
