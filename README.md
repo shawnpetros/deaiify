@@ -47,9 +47,9 @@ This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We
 
 ```
   ┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-  │  LLM writes │────>│  before_agent_    │────>│  Dashes found?  │
-  │  a response │     │  reply hook       │     │                 │
-  │             │     │  intercepts it    │     │  YES: REWRITE   │
+  │  LLM writes │────>│  before_agent_   │────>│  Dashes found?  │
+  │  a response │     │  reply hook      │     │                 │
+  │             │     │  intercepts it   │     │  YES: REWRITE   │
   └─────────────┘     └──────────────────┘     │  NO: SHIP IT    │
                                                └────────┬────────┘
                                                         │ (dashes found)
@@ -65,7 +65,7 @@ This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We
                                                ┌─────────────────┐
                                                │  DELIVER CLEAN  │
                                                │  HUMAN-SOUNDING │
-                                               │  PROSE           │
+                                               │  PROSE          │
                                                └─────────────────┘
 ```
 
