@@ -1,0 +1,10 @@
+{
+  "name": "deaiify",
+  "version": "3.0.0",
+  "description": "Ban LLM em-dashes",
+  "main": "dist/index.js",
+  "openclaw": {
+    "plugin": true,
+    "extensions": ["./dist/index.js"]
+  }
+}
