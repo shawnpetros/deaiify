@@ -1,8 +1,8 @@
 {
   "id": "deaiify",
   "name": "deAIify",
-  "description": "Intercepts LLM output and eliminates em-dashes via embedded rewrite",
-  "version": "1.2.0",
+  "description": "Intercepts LLM output and eliminates em-dashes via regex-first rewrite with optional LLM fallback",
+  "version": "2.2.0",
   "configSchema": {
     "type": "object",
     "properties": {
@@ -11,14 +11,35 @@
         "default": true,
         "description": "Enable or disable the plugin"
       },
+      "mode": {
+        "type": "string",
+        "enum": ["auto", "regex", "llm"],
+        "default": "auto",
+        "description": "Rewrite strategy: 'auto' (regex-first, LLM fallback), 'regex' (deterministic only), 'llm' (always LLM)"
+      },
       "correctionPrompt": {
         "type": "string",
         "default": "The following text contains em-dashes or en-dashes. Rewrite it, replacing every em-dash and en-dash with \" -- \" (space-hyphen-hyphen-space). Do not change anything else. Do not restructure sentences. Do not add or remove words. Just swap the dashes.",
-        "description": "Custom prompt for the embedded rewrite"
+        "description": "Custom prompt for the embedded LLM rewrite (used in 'llm' and 'auto' fallback modes)"
       }
     },
     "additionalProperties": false
   },
+  "security-notes": [
+    "Regex-first approach: LLM is only invoked when regex produces whitespace artifacts (mode=auto) or when explicitly configured (mode=llm)",
+    "LLM rewrite is verified before delivery: word count drift >10% or length expansion >50% triggers rejection (fail-open to original)",
+    "No user-supplied text reaches the LLM prompt - only the agent's own output is rewritten"
+  ],
+  "privacy-notes": [
+    "No disk persistence: sessions are ephemeral with no sessionFile written",
+    "No data leaves the OpenClaw runtime boundary - rewrite uses the platform's embedded agent"
+  ],
+  "attack-surface-reduction": [
+    "Deterministic regex mode available (mode=regex) for zero-LLM operation",
+    "LLM output verified against original before delivery",
+    "10s timeout on embedded agent prevents resource exhaustion",
+    "Fail-open design: plugin failure never blocks agent output"
+  ],
   "author": "Shawn Petros",
   "keywords": ["openclaw", "plugin", "em-dash", "text-sanitization"]
 }
