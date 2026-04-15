@@ -3,6 +3,13 @@
   "version": "3.0.0",
   "description": "Ban LLM em-dashes and en-dashes before delivery, rewrite via embedded LLM",
   "main": "dist/index.js",
+  "files": [
+    "dist/",
+    "openclaw.plugin.json",
+    "openclaw.json",
+    "README.md",
+    "package.json"
+  ],
   "type": "module",
   "scripts": {
     "build": "tsc",
