@@ -19,6 +19,12 @@
   },
   "openclaw": {
     "plugin": true,
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "builtWith": "2026.4.11",
+      "sdk": "2026.4.11",
+      "minGateway": "2026.3.24-beta.2"
+    },
     "extensions": [
       {
         "id": "deaiify",
