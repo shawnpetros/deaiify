@@ -30,11 +30,7 @@
       "sdkVersion": "2026.4.11"
     },
     "extensions": [
-      {
-        "id": "deaiify",
-        "entry": "dist/index.js",
-        "hooks": ["before_agent_reply", "message_sending"]
-      }
+      "./dist/index.js"
     ]
   }
 }
