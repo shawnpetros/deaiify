@@ -1,100 +1,100 @@
-# deAIify - The Em-Dash Slayer
+# deAIify
 
-> **ARE YOU TIRED of your LLM making your tweets look like a bot wrote them?**
+**Ban LLM tells. Make text sound human.**
 
-Are you frustrated when your clean, human content gets ruined by those pesky em-dashes? Does your agent's output keep using "\u2014" when you want simple, readable prose?
+## What it does
 
-**STOP THE EM-DASH MADNESS!**
+Em-dashes (\u2014) and en-dashes (\u2013) are the loudest tells that text was LLM-generated.
+deAIify bans both, and when it catches them, it does something smarter than string replacement:
+it sends the reply back to the LLM with a restructuring prompt and delivers the properly rewritten version.
 
-## Meet deAIify
+No character swaps. No "comma where an em-dash was." Actual sentences that read like a human wrote them.
 
-The ONLY OpenClaw plugin that systematically hunts down and eliminates em-dashes and en-dashes from your agent's output. Regex-first for speed, LLM fallback for edge cases, and fully configurable.
+## Architecture: v3 LLM-first rewrite
 
-### **FEATURES:**
+**v1 was wrong:** string replacement swaps characters but leaves broken grammar.
+Example: "Things like this -- might result in" becomes "Things like this. might result in" (lowercase m after period, broken).
 
-**PRECISION TARGETING** - Detects U+2014 (em-dash) and U+2013 (en-dash) with surgical accuracy. Hyphens? Untouched. Commas? Sacred.
+**v2 introduced LLM rewrite** but kept a regex-first mode that caused the same problem.
 
-**THREE MODES** - `auto` (regex-first, LLM fallback), `regex` (deterministic, zero LLM), `llm` (always rewrite). Pick your poison.
+**v3 is correct:**
 
-**VERIFIED OUTPUT** - LLM rewrites are checked against the original: word count drift and length expansion trigger rejection. No hallucinated text gets through.
+1. `before_agent_reply` intercepts the completed assistant text before delivery
+2. Detects banned dash characters (U+2013, U+2014) outside of code blocks
+3. Calls `runEmbeddedPiAgent` with a restructuring prompt
+4. Verifies the rewrite is sane (word count and length checks)
+5. Returns the rewritten reply
 
-**FAST AS BLINKING** - Regex handles 95% of cases with zero latency. LLM fallback has a 10-second timeout. Fail-open by design.
+The `message_sending` hook exists only as an absolute last-resort fallback. If it fires, something is wrong with hook registration and it logs a warning.
 
-**ZERO DISK WRITES** - Ephemeral sessions only. Nothing written to disk. Scanner-friendly.
+## How it works
 
-### **HOW IT WORKS:**
+When the LLM generates a response containing any banned dash:
 
-#### Auto mode (default)
-1. Agent generates output with em-dashes
-2. deAIify intercepts at `before_agent_reply` hook
-3. Regex replaces dashes with " -- "
-4. If regex result is clean: done, no LLM needed
-5. If regex left whitespace artifacts: LLM cleans up, result verified before delivery
+1. `before_agent_reply` catches it
+2. A restructuring prompt goes to the LLM: "Eliminate these dashes. Rephrase so the sentence flows without them."
+3. The LLM produces a new version with natural phrasing
+4. A verification gate checks the rewrite did not balloon in length or word count
+5. The properly restructured version is delivered
 
-#### Regex mode
-1. Agent generates output with em-dashes
-2. Regex replaces all em/en-dashes with " -- "
-3. Done. No LLM invoked, fully deterministic.
+On any error (LLM timeout, empty response, verification failure), the plugin fails open and delivers the original reply unchanged. No crashes. No stuck sessions.
 
-#### LLM mode
-1. Agent generates output with em-dashes
-2. Embedded LLM rewrites all dashes
-3. Result verified (word count, length) before delivery
-
-### **TECHNICAL SPECS:**
-
-- **Plugin ID:** `deaiify`
-- **Hook:** `before_agent_reply` (single hook, no bloat)
-- **Detection Regex:** `/[\u2014\u2013]/`
-- **Replacement Regex:** `/\s*[\u2014\u2013]\s*/g` -> ` -- `
-- **Timeout:** 10 seconds (LLM path only)
-- **Fail Mode:** Open (delivers original if rewrite fails or verification rejects)
-
-### **INSTALLATION:**
+## Installation
 
 ```bash
-# From ClawHub
-clawhub install deaiify
-
-# Or directly
-openclaw plugins install shawnpetros/deaiify
+openclaw plugin install deaiify
 ```
 
-### **CONFIGURATION:**
-
-```json
-{
-  "id": "deaiify",
-  "enabled": true,
-  "mode": "auto",
-  "correctionPrompt": "..."
-}
-```
+## Configuration
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `enabled` | boolean | `true` | Toggle plugin on/off |
-| `mode` | string | `"auto"` | `"auto"` (regex-first, LLM fallback), `"regex"` (deterministic), `"llm"` (always LLM) |
-| `correctionPrompt` | string | (built-in) | Custom prompt for LLM rewrite |
+| `rewriteTimeoutMs` | integer | `15000` | Timeout in ms for the embedded rewrite call |
 
-### **WHAT IT DOESN'T DO:**
+The plugin uses the session's default model for rewrites. No model config needed.
 
-- **NOT** touch regular hyphens (U+002D)
-- **NOT** restructure sentences
-- **NOT** add or remove content
-- **NOT** change any other punctuation
-- **NOT** write anything to disk
+Example plugin config:
+```json
+{
+  "rewriteTimeoutMs": 20000
+}
+```
 
-### **THE BILLY MAYS PROMISE:**
+## Detection
 
-"If your LLM's output is covered in em-dashes, IF it looks like it was written by a robot from 1995, THEN **deAIify** is the solution you've been waiting for! Don't let bot-formatted prose ruin your human-sounding content. Try deAIify today!"
+Only two patterns are detected:
 
-### **CREDITS:**
+- `\u2014` -- Unicode em-dash (U+2014)
+- `\u2013` -- Unicode en-dash (U+2013)
 
-- Built by: Shawn Petros
-- For: OpenClaw plugin ecosystem
-- License: MIT
+Hyphen-minus (U+002D, the regular `-` character) is NEVER touched.
+Double-hyphens (`--`) in output are fine and expected.
 
----
+Content inside fenced code blocks (` ``` `) and inline code (`` ` ``) is excluded from detection.
+Code samples that happen to contain Unicode dashes are left alone.
 
-**deAIify** - Because your agent should sound human, not like a punctuation enthusiast from the 19th century.
+## Verification gate
+
+The rewrite is rejected (and the original delivered unchanged) if:
+
+- Word count drifts more than 10% from the original
+- Total length expands more than 50% over the original
+
+The LLM is restructuring, not adding content. If it bloats the response, something went wrong.
+
+## Security and privacy
+
+- No message content is stored to disk. Rewrite prompts are ephemeral and scoped to the current session.
+- Embedded LLM rewrite uses the session-default model. No external API calls.
+- Fail-open design: every error path delivers the original reply unchanged.
+- Single hook path. No config-driven code execution.
+
+## Philosophy
+
+"Boil the Ocean": the marginal cost of completeness is near zero with AI. Do the whole thing, with tests, with docs, to the standard of "holy shit, that's done."
+
+deAIify is not about finding the most common pattern. It is about delivering clean, human-sounding prose every time, restructured properly at the sentence level, not patched with character substitutions.
+
+## License
+
+MIT
