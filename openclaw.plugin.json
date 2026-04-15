@@ -1,4 +1,5 @@
 {
+  "id": "deaiify",
   "name": "deaiify",
   "version": "3.0.0",
   "description": "Intercepts em-dashes and en-dashes in outbound replies. Rewrites via embedded LLM so sentences are properly restructured, not just character-swapped.",
