@@ -1,4 +1,15 @@
-# SKILL.md — deaiify Plugin
+---
+name: deaiify
+description: Ban LLM em-dashes and en-dashes before delivery, rewrite via embedded LLM
+homepage: https://github.com/shawnpetros/deaiify
+emoji: 🚫
+metadata:
+  openclaw:
+    requires:
+      bins: ["openclaw"]
+---
+
+# SKILL.md — deAIify Plugin
 
 ## Overview
 Enforces Shawn's "no em dashes" rule across all output by intercepting messages, detecting U+2013 (en dash) and U+2014 (em dash), and forcing a rewrite turn via embedded LLM correction.
