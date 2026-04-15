@@ -1,19 +1,28 @@
 {
   "name": "deaiify",
-  "version": "1.0.0",
-  "description": "OpenClaw plugin that intercepts and rewrites LLM responses containing em-dashes and en-dashes",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "version": "2.0.0",
+  "description": "Intercepts LLM output and eliminates em-dashes via embedded rewrite",
+  "type": "module",
+  "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
-  },
-  "peerDependencies": {
-    "@openclaw/plugin-sdk": "*"
+    "test": "node --import tsx --test tests/*.test.ts"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@openclaw/plugin-sdk": "*"
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0"
   },
+  "peerDependencies": {
+    "openclaw": ">=2026.3.24-beta.2"
+  },
+  "openclaw": {
+    "extensions": ["./src/index.ts"],
+    "compat": {
+      "pluginApi": ">=2026.3.24-beta.2",
+      "minGatewayVersion": "2026.3.24-beta.2"
+    }
+  },
+  "keywords": ["openclaw", "plugin", "em-dash", "text-sanitization"],
+  "author": "Shawn Petros",
   "license": "MIT"
 }

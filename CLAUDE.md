@@ -1,19 +1,33 @@
-# deAIify
+# deAIify Plugin v2
 
-## Purpose
-OpenClaw plugin that intercepts outbound assistant messages containing em-dashes (U+2014) or en-dashes (U+2013) and requests an LLM rewrite without them. Two-hook architecture: `message_sending` cancels delivery, `before_agent_reply` injects correction prompt.
+## Architecture
+- Single `before_agent_reply` hook
+- Detection: U+2014 (em-dash) and U+2013 (en-dash) only. U+002D never touched.
+- Rewrite via `api.runtime.agent.runEmbeddedAgent()` with 10s timeout
+- Fail-open: original text delivered if rewrite fails
+- Config via `api.pluginConfig`: `enabled` (boolean), `correctionPrompt` (string)
 
-## Vault Sync
-Search terms: `deaiify`, `openclaw plugin`, `em-dash`, `dash detection`
+## Files
+- `src/index.ts` — Plugin entry (definePluginEntry + hook)
+- `src/detection.ts` — Dash detection utilities
+- `tests/detection.test.ts` — Detection unit tests
+- `openclaw.plugin.json` — Plugin manifest
+- `package.json` — Package config with openclaw.extensions
 
-## Feature Tracker
-See `features.json` for structured phase/feature tracking.
+## SDK Pattern
+```typescript
+import { definePluginEntry } from 'openclaw/plugin-sdk/plugin-entry';
 
-## Tech Stack
-- TypeScript, no runtime deps
-- Peer dep: `@openclaw/plugin-sdk`
-- Build: `tsc`
+export default definePluginEntry({
+  id: 'deaiify',
+  register(api) {
+    api.registerHook('before_agent_reply', async (event, ctx) => { ... });
+  }
+});
+```
 
-## Conventions
-- All hook logic lives in `src/hooks/` with thin wrappers in `src/index.ts`
-- Shared constants in `src/constants.ts`, types in `src/types.ts`
+## Hook contract
+- `event.cleanedBody` — the LLM reply text
+- `ctx` — `PluginHookAgentContext` (runId, sessionKey, etc.)
+- Return `{ handled: true, reply: { text: '...' } }` to replace
+- Return `{ handled: false }` to pass through

@@ -1,10 +1,24 @@
 {
-  "name": "deaiify",
-  "version": "1.0.0",
-  "description": "Intercepts and rewrites LLM responses containing em-dashes and en-dashes",
-  "entry": "dist/index.js",
-  "hooks": [
-    "message_sending",
-    "before_agent_reply"
-  ]
+  "id": "deaiify",
+  "name": "deAIify",
+  "description": "Intercepts LLM output and eliminates em-dashes via embedded rewrite",
+  "version": "1.2.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "enabled": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable or disable the plugin"
+      },
+      "correctionPrompt": {
+        "type": "string",
+        "default": "The following text contains em-dashes or en-dashes. Rewrite it, replacing every em-dash and en-dash with \" -- \" (space-hyphen-hyphen-space). Do not change anything else. Do not restructure sentences. Do not add or remove words. Just swap the dashes.",
+        "description": "Custom prompt for the embedded rewrite"
+      }
+    },
+    "additionalProperties": false
+  },
+  "author": "Shawn Petros",
+  "keywords": ["openclaw", "plugin", "em-dash", "text-sanitization"]
 }
