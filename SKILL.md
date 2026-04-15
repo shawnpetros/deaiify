@@ -13,19 +13,8 @@ Enforces Shawn's "no em dashes" rule across all output by intercepting messages,
 - Calls embedded LLM to rewrite without dashes (preserves meaning, tone, style)
 - Returns corrected output to user
 - No change to U+002D (hyphen-minus in code)
-- Meme-worthy "Billy Mays infomercial" README
+- Meme-worthy README
 
 ## Usage
 - Enabled via `openclaw.json` plugin config
 - Runs on every message that might contain dashes
-- Zero config required - auto-detects and corrects
-
-## Installation
-```bash
-clawhub install deaiify
-# or
-openclaw plugins install deaiify
-```
-
-## Author
-Shawn Petros
