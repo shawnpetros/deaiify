@@ -18,6 +18,13 @@
     "vitest": "^1.0.0"
   },
   "openclaw": {
-    "plugin": true
+    "plugin": true,
+    "extensions": [
+      {
+        "id": "deaiify",
+        "entry": "dist/index.js",
+        "hooks": ["before_agent_reply", "message_sending"]
+      }
+    ]
   }
 }
