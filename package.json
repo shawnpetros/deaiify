@@ -1,6 +1,6 @@
 {
   "name": "deaiify",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "Ban LLM em-dashes and en-dashes before delivery, rewrite via embedded LLM",
   "main": "dist/index.js",
   "type": "module",

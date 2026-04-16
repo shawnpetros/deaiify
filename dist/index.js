@@ -56,8 +56,7 @@ export default definePluginEntry({
             const agentDir = api.runtime.agent.resolveAgentDir(api.config, agentId);
             const runSuffix = buildRewriteRunSuffix();
             const runId = `deaiify-${runSuffix}`;
-            const tempDir = await fs.mkdtemp(path.join(resolvePreferredOpenClawTmpDir(), "openclaw-deaiify-"));
-            const sessionFile = path.join(tempDir, "session.jsonl");
+            const sessionFile = path.join(resolvePreferredOpenClawTmpDir(), `deaiify-${runSuffix}.jsonl`);
             try {
                 const result = await api.runtime.agent.runEmbeddedPiAgent({
                     sessionId: runId,
@@ -108,7 +107,7 @@ export default definePluginEntry({
                 return { handled: false };
             }
             finally {
-                await fs.rm(tempDir, { recursive: true, force: true }).catch(() => undefined);
+                await fs.unlink(sessionFile).catch(() => undefined);
             }
         });
         // ── Hook 2: message_sending (ABSOLUTE LAST-RESORT FALLBACK) ───────────
