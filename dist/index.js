@@ -1,12 +1,35 @@
-import { definePluginEntry } from "@openclaw/plugin-sdk/core.js";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { definePluginEntry } from "@openclaw/plugin-sdk/plugin-entry";
+import { resolvePreferredOpenClawTmpDir } from "@openclaw/plugin-sdk/temp-path";
 import { CORRECTION_PROMPT } from "./constants.js";
 import { containsDashes, verifyRewrite } from "./utils.js";
+const DEFAULT_TIMEOUT_MS = 15000;
+function resolvePluginConfig(pluginConfig) {
+    return pluginConfig && typeof pluginConfig === "object"
+        ? pluginConfig
+        : {};
+}
+function resolveRewriteTimeoutMs(pluginConfig) {
+    const raw = pluginConfig.rewriteTimeoutMs;
+    const parsed = typeof raw === "number"
+        ? raw
+        : typeof raw === "string"
+            ? Number.parseInt(raw, 10)
+            : Number.NaN;
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TIMEOUT_MS;
+}
+function buildRewriteRunSuffix() {
+    return `${Date.now().toString(36)}-${randomUUID().slice(0, 8)}`;
+}
 export default definePluginEntry({
     id: "deaiify",
     name: "deAIify",
     description: "Intercepts em-dashes and en-dashes in outbound replies. " +
         "Rewrites via embedded LLM so sentences are properly restructured, not just character-swapped.",
     register(api) {
+        const pluginConfig = resolvePluginConfig(api.pluginConfig);
         // ── Hook 1: before_agent_reply (PRIMARY) ──────────────────────────────
         //
         // Fires after the LLM generates its reply, before delivery.
@@ -16,46 +39,76 @@ export default definePluginEntry({
         // Fail-open: any error returns { handled: false } so the original
         // reply is still delivered unchanged.
         api.on("before_agent_reply", async (event, ctx) => {
+            if (pluginConfig.enabled === false) {
+                return { handled: false };
+            }
+            if (ctx.runId?.startsWith("deaiify-") ||
+                ctx.sessionKey?.includes(":deaiify:")) {
+                return { handled: false };
+            }
             const text = event.cleanedBody ?? "";
             if (!text || !containsDashes(text)) {
                 return { handled: false };
             }
-            console.log("[deAIify] Banned dash detected in reply. Calling embedded LLM for restructured rewrite...");
+            api.logger.info("[deAIify] Banned dash detected. Rewriting via embedded agent.");
+            const agentId = ctx.agentId?.trim() || "main";
+            const workspaceDir = api.runtime.agent.resolveAgentWorkspaceDir(api.config, agentId);
+            const agentDir = api.runtime.agent.resolveAgentDir(api.config, agentId);
+            const runSuffix = buildRewriteRunSuffix();
+            const runId = `deaiify-${runSuffix}`;
+            const tempDir = await fs.mkdtemp(path.join(resolvePreferredOpenClawTmpDir(), "openclaw-deaiify-"));
+            const sessionFile = path.join(tempDir, "session.jsonl");
             try {
-                const runtime = api.runtime;
-                const timeoutMs = api.config?.rewriteTimeoutMs ?? 15000;
-                const result = await runtime.agent.runEmbeddedPiAgent({
-                    sessionId: ctx.sessionId ?? `deaiify_${Date.now()}`,
-                    workspaceDir: runtime.workspaceDir ??
-                        `${process.env.HOME ?? "/tmp"}/.openclaw/workspace`,
+                const result = await api.runtime.agent.runEmbeddedPiAgent({
+                    sessionId: runId,
+                    sessionKey: ctx.sessionKey ? `${ctx.sessionKey}:deaiify:${runSuffix}` : undefined,
+                    agentId,
+                    messageChannel: ctx.channelId,
+                    messageProvider: ctx.messageProvider,
+                    sessionFile,
+                    workspaceDir,
+                    agentDir,
+                    config: api.config,
                     prompt: CORRECTION_PROMPT + text,
-                    timeoutMs,
-                    runId: `deaiify_${Date.now()}`,
+                    provider: ctx.modelProviderId,
+                    model: ctx.modelId,
+                    timeoutMs: resolveRewriteTimeoutMs(pluginConfig),
+                    runId,
                     trigger: "manual",
                     disableMessageTool: true,
+                    disableTools: true,
+                    bootstrapContextMode: "lightweight",
+                    verboseLevel: "off",
+                    reasoningLevel: "off",
+                    silentExpected: true,
                 });
-                const payloads = result?.payloads ?? [];
-                const rewritten = payloads
-                    .map((p) => p?.text ?? "")
+                const rewritten = (result.payloads ?? [])
+                    .map((payload) => payload.text ?? "")
                     .filter(Boolean)
-                    .join("")
+                    .join("\n")
                     .trim();
                 if (!rewritten) {
-                    console.warn("[deAIify] LLM returned empty rewrite. Falling through.");
+                    api.logger.warn("[deAIify] Embedded rewrite returned empty output. Delivering original.");
+                    return { handled: false };
+                }
+                if (containsDashes(rewritten)) {
+                    api.logger.warn("[deAIify] Rewrite still contained banned dashes. Delivering original.");
                     return { handled: false };
                 }
                 if (!verifyRewrite(text, rewritten)) {
-                    console.warn("[deAIify] Rewrite failed verification gate (word count drift or length expansion out of range). " +
+                    api.logger.warn("[deAIify] Rewrite failed verification gate (word count drift or length expansion out of range). " +
                         "Delivering original reply unchanged.");
                     return { handled: false };
                 }
-                console.log("[deAIify] Rewrite accepted. Delivering restructured reply.");
+                api.logger.info("[deAIify] Rewrite accepted. Delivering rewritten reply.");
                 return { handled: true, reply: { text: rewritten } };
             }
             catch (err) {
-                console.error("[deAIify] Embedded rewrite threw an error:", err);
-                // Fail-open: deliver original unchanged
+                api.logger.error(`[deAIify] Embedded rewrite failed: ${err instanceof Error ? err.message : String(err)}`);
                 return { handled: false };
+            }
+            finally {
+                await fs.rm(tempDir, { recursive: true, force: true }).catch(() => undefined);
             }
         });
         // ── Hook 2: message_sending (ABSOLUTE LAST-RESORT FALLBACK) ───────────
@@ -65,16 +118,19 @@ export default definePluginEntry({
         // Log a warning so we can diagnose the problem.
         // Apply minimal string cleanup so the user at least gets readable output.
         api.on("message_sending", (event, _ctx) => {
+            if (pluginConfig.enabled === false) {
+                return;
+            }
             const text = event.content ?? "";
             if (!text || !containsDashes(text)) {
                 return;
             }
-            console.warn("[deAIify] WARNING: message_sending fallback fired. " +
+            api.logger.warn("[deAIify] WARNING: message_sending fallback fired. " +
                 "This means before_agent_reply did not handle this message. " +
                 "Check hook registration and plugin load order.");
             const cleaned = text
-                .replace(/\u2014/g, ", ") // em-dash -> comma space
-                .replace(/\u2013/g, "-"); // en-dash -> hyphen
+                .replace(/\u2014/g, ", ")
+                .replace(/\u2013/g, "-");
             return { content: cleaned };
         });
     },
