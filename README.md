@@ -8,7 +8,7 @@
 
 ## HI, BILLY MAYS HERE FOR deAIify!
 
-ARE YOU TIRED of your LLM dropping em-dashes into every single response -- making your automated tweets look like a 19th century periodical and TANKING your engagement?
+ARE YOU TIRED of your LLM dropping em-dashes into every single response? Are they making your automated tweets look like a 19th century periodical and TANKING your engagement?
 
 Does your AI assistant write like it swallowed a Victorian typewriter? Do your Slack bots sound like they're narrating a Dickens novel? Is every sentence interrupted by those PRETENTIOUS little horizontal lines that SCREAM "a robot wrote this"?
 
@@ -64,7 +64,7 @@ This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We
 
 ### THE MIRACLE FORMULA
 
-**`before_agent_reply`** -- The QUALITY INSPECTOR on the assembly line. Every assistant response passes through before it reaches your users. It scans for those sneaky Unicode dashes. If it finds one? The response gets pulled off the line and sent to the RESTRUCTURING DEPARTMENT (the LLM, with a prompt that says "eliminate these dashes, rephrase so the sentence flows naturally"). The LLM produces a clean version. The verification gate checks it didn't balloon in size. Then the properly rewritten version ships.
+**`before_agent_reply`**: The QUALITY INSPECTOR on the assembly line. Every assistant response passes through before it reaches your users. It scans for those sneaky Unicode dashes. If it finds one? The response gets pulled off the line and sent to the RESTRUCTURING DEPARTMENT (the LLM, with a prompt that says "eliminate these dashes, rephrase so the sentence flows naturally"). The LLM produces a clean version. The verification gate checks it didn't balloon in size. Then the properly rewritten version ships.
 
 If anything goes wrong (LLM timeout, empty response, verification failure), the plugin **fails open** and delivers the original reply unchanged. No crashes. No stuck sessions. No drama.
 
@@ -127,8 +127,8 @@ But you DON'T HAVE TO. Defaults are ALREADY PERFECT.
 
 Only two Unicode characters. That's it. Surgical precision.
 
-- `\u2014` -- Unicode em-dash (U+2014)
-- `\u2013` -- Unicode en-dash (U+2013)
+- `\u2014`: Unicode em-dash (U+2014)
+- `\u2013`: Unicode en-dash (U+2013)
 
 Hyphen-minus (U+002D, the regular `-` character) is NEVER touched. Double-hyphens (`--`) in output are fine and expected. Your code is safe. Your CLI flags are safe. Only the PROSE DASHES get the treatment.
 
@@ -137,13 +137,13 @@ Hyphen-minus (U+002D, the regular `-` character) is NEVER touched. Double-hyphen
 ## TESTIMONIALS*
 
 > "I used to spend 3 hours a day manually removing em-dashes from my bot's output. Now I spend that time with my family."
-> -- Definitely A Real Person
+> - Definitely A Real Person
 
 > "deAIify saved my marriage."
-> -- Also Very Real
+> - Also Very Real
 
 > "My engagement went up 400% after I stopped sounding like a Victorian telegraph operator."
-> -- Absolutely Not Made Up
+> - Absolutely Not Made Up
 
 *\*These testimonials are as real as the em-dashes in your LLM output are necessary (they're not).*
 
