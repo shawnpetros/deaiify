@@ -2,17 +2,6 @@
   <img src="assets/hero.png" alt="deAIify - SMASH AI PUNCTUATION! ONE SMALL CHANGE. HUGE IMPACT!" width="900" />
 </p>
 
-```
-     _          _    ___  _  __       
-    | |        / \  |_ _|(_)/ _|_   _ 
-  __| | ___   / _ \  | | | | |_| | | |
- / _` |/ _ \ / ___ \ | | | |  _| |_| |
-| (_| |  __// ___ _\|___|_|_|  \__, |
- \__,_|\___\_/   \_/            |___/ 
-```
-
-# deAIify
-
 ### An OpenClaw Plugin
 
 ---
