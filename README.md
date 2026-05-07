@@ -21,10 +21,10 @@ The ONLY OpenClaw plugin that doesn't just find-and-replace your dashes like som
 ## WHAT DOES IT DO?
 
 - **CATCHES** em-dashes (U+2014) and en-dashes (U+2013) BEFORE they reach your users
-- **INTERCEPTS** the response via `before_agent_reply` -- the hook fires BEFORE delivery
+- **INTERCEPTS** the response via `before_agent_reply`, meaning the hook fires BEFORE delivery
 - **SENDS IT BACK** to the LLM with a restructuring prompt that says "REWRITE THAT WITHOUT THE DASHES, PAL"
 - **VERIFIES** the rewrite is sane (word count and length checks, because we're not animals)
-- **SHIPS THE CLEAN VERSION** -- actual restructured sentences, not some find-and-replace hackjob
+- **SHIPS THE CLEAN VERSION** with actual restructured sentences, not some find-and-replace hackjob
 
 This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We don't put a band-aid on the dash. We send the whole response back to the FACTORY.
 
@@ -40,9 +40,9 @@ This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We
 
 ```
   ┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-  │  LLM writes │────>│  before_agent_    │────>│  Dashes found?  │
-  │  a response │     │  reply hook       │     │                 │
-  │             │     │  intercepts it    │     │  YES: REWRITE   │
+  │  LLM writes │────>│  before_agent_   │────>│  Dashes found?  │
+  │  a response │     │  reply hook      │     │                 │
+  │             │     │  intercepts it   │     │  YES: REWRITE   │
   └─────────────┘     └──────────────────┘     │  NO: SHIP IT    │
                                                └────────┬────────┘
                                                         │ (dashes found)
@@ -58,7 +58,7 @@ This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We
                                                ┌─────────────────┐
                                                │  DELIVER CLEAN  │
                                                │  HUMAN-SOUNDING │
-                                               │  PROSE           │
+                                               │  PROSE          │
                                                └─────────────────┘
 ```
 
@@ -72,7 +72,7 @@ It's like having a QUALITY CONTROL DEPARTMENT for your AI output, except it runs
 
 ---
 
-## BUT WAIT -- THERE'S MORE!
+## BUT WAIT! THERE'S MORE!
 
 ### Smart Code Detection
 Content inside fenced code blocks and inline code is COMPLETELY IGNORED. Your code samples with Unicode dashes? Untouched. Your `--verbose` flags? Safe. We only target the PROSE, where dashes are crimes against readability.
@@ -90,7 +90,7 @@ The LLM is restructuring, not writing a novel. If it bloats the response, someth
 ```
 Give the LLM more time if your model is slow, or tighten it up if you're running local. Default is 15 seconds because we believe in FAST RESULTS.
 
----
+-
 
 ## JUST 2 EASY STEPS!
 
@@ -121,7 +121,7 @@ But you DON'T HAVE TO. Defaults are ALREADY PERFECT.
 
 **ZERO external runtime dependencies.** Just a peer dependency on `@openclaw/plugin-sdk`. That's it. No bloat. No node_modules swamp. Just PURE, UNADULTERATED dash destruction.
 
----
+-
 
 ## DETECTION TARGETS
 
