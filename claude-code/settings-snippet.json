@@ -1,0 +1,15 @@
+{
+  "_comment": "Manual install: merge this fragment into ~/.claude/settings.json under .hooks.Stop. install.sh does it for you with jq.",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /Users/YOURNAME/.claude/hooks/deaiify-stop.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

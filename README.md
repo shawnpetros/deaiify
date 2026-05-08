@@ -32,7 +32,7 @@ This isn't character substitution. This is a FULL ARCHITECTURAL INTERVENTION. We
 
 ## v3: THE FORMULA, PERFECTED
 
-**v1 was wrong:** string replacement swaps characters but leaves broken grammar. "Things like this -- might result in" becomes "Things like this. might result in" (lowercase m after period, BROKEN).
+**v1 was wrong:** string replacement swaps characters but leaves broken grammar. `Things like this -- might result in` becomes `Things like this. might result in` (lowercase m after period, BROKEN).
 
 **v2 tried harder** but kept a regex-first mode that caused the same problem.
 
@@ -90,7 +90,33 @@ The LLM is restructuring, not writing a novel. If it bloats the response, someth
 ```
 Give the LLM more time if your model is slow, or tighten it up if you're running local. Default is 15 seconds because we believe in FAST RESULTS.
 
--
+---
+
+## ARE YOU TIRED OF...
+
+...running `sed -i` on every output to scrub punctuation, only to break a hyphen in a CLI flag and SHIP A BUSTED COMMAND TO PRODUCTION?
+
+...telling your LLM "no em-dashes please" in the system prompt and watching it CHEERFULLY IGNORE YOU? Like you suggested a vacation policy?
+
+...begging the model to rewrite, only for it to substitute ` -- ` in there like you wouldn't NOTICE THE SAME RHYTHM?
+
+...copy-pasting every single reply into a SEPARATE "scrub" tool because your agent stack has NO POST-PROCESSING LAYER? In TWENTY TWENTY SIX?!
+
+...writing 47 follow-up messages to your agent ("remove the dash, no the OTHER dash, NO NOT THAT dash, the LONG ONE") just to send a clean email that doesn't SCREAM "a robot wrote this"?
+
+...building a custom regex pipeline, only to discover you ALSO broke the inline code, the markdown tables, the CLI examples, AND your own will to live?
+
+...running a SEPARATE Haiku pass on every output, paying for ANOTHER MODEL CALL just to scrub punctuation, watching your token bill BALLOON like a hot air balloon at the county fair?
+
+...settling for output that SCREAMS "a robot wrote this" because the alternatives are TOO COMPLICATED, TOO SLOW, or TOO EXPENSIVE to wire up?
+
+**STOP. JUST. STOP.**
+
+You don't need a 12-step pipeline. You don't need a separate model. You don't need to retrain anything. You don't even need to RESTART YOUR AGENT.
+
+YOU NEED ONE PLUGIN.
+
+---
 
 ## JUST 2 EASY STEPS!
 
@@ -121,7 +147,19 @@ But you DON'T HAVE TO. Defaults are ALREADY PERFECT.
 
 **ZERO external runtime dependencies.** Just a peer dependency on `@openclaw/plugin-sdk`. That's it. No bloat. No node_modules swamp. Just PURE, UNADULTERATED dash destruction.
 
--
+---
+
+## BUT YOU SAY YOU USE CLAUDE CODE?!
+
+**WELL HOLD THE PHONE, SAILOR!** deAIify is ALSO AVAILABLE as a Claude Code Stop hook!
+
+Same product philosophy. Same architectural intervention. Same em-dash extermination. Just wired into Claude Code's hook system instead of OpenClaw's. Scans the assistant's Stop event, blocks the turn from ending if it spots a long line or two short lines in prose, forces a rewrite. Loop-safe. Fails open. ZERO drama.
+
+**[Get the Claude Code installer here](claude-code/README.md)**
+
+ONE PRODUCT. TWO HARNESSES. ZERO DASHES.
+
+---
 
 ## DETECTION TARGETS
 
