@@ -73,6 +73,14 @@ describe("stripCodeBlocks", () => {
     expect(stripped).toContain("After.");
   });
 
+  it("removes fenced code blocks with a language tag", () => {
+    const text = "Prose.\n```ts\nconst x = a\u2014b;\n```\nTail.";
+    const stripped = stripCodeBlocks(text);
+    expect(stripped).not.toContain("\u2014");
+    expect(stripped).toContain("Prose.");
+    expect(stripped).toContain("Tail.");
+  });
+
   it("removes inline code", () => {
     const text = "Use `value\u2013key` in your config.";
     const stripped = stripCodeBlocks(text);
@@ -84,6 +92,40 @@ describe("stripCodeBlocks", () => {
     const stripped = stripCodeBlocks(text);
     expect(stripped).toContain("Normal text here.");
     expect(stripped).toContain("More normal text.");
+  });
+
+  it("removes only the matched span when two fenced blocks are present", () => {
+    const text = "alpha\n```\na\u2014b\n```\nbeta\n```\nc\u2013d\n```\ngamma";
+    const stripped = stripCodeBlocks(text);
+    expect(stripped).not.toContain("\u2014");
+    expect(stripped).not.toContain("\u2013");
+    expect(stripped).toContain("alpha");
+    expect(stripped).toContain("beta");
+    expect(stripped).toContain("gamma");
+  });
+
+  it("does NOT match empty inline code (regex requires one or more inner chars)", () => {
+    // src/utils.ts uses `[^`\n]+` (one-or-more). Pin this so future changes
+    // are deliberate. The stop-hook variant uses `[^`\n]*` (zero-or-more).
+    const text = "before`` after";
+    const stripped = stripCodeBlocks(text);
+    expect(stripped).toBe("before`` after");
+  });
+
+  it("leaves an unclosed fence and its dashes in place", () => {
+    // Without a matching closing fence, the regex doesn't match. Document
+    // this so it's clear that malformed fences fall through to detection.
+    const text = "prose.\n```\nstill open\u2014here";
+    const stripped = stripCodeBlocks(text);
+    expect(stripped).toContain("\u2014");
+  });
+
+  it("does NOT strip backtick spans that contain a newline", () => {
+    // Inline code regex disallows newlines, so multi-line backtick spans
+    // are left alone (including any dashes inside them).
+    const text = "before `start\nend\u2014here` after";
+    const stripped = stripCodeBlocks(text);
+    expect(stripped).toContain("\u2014");
   });
 });
 
@@ -111,5 +153,19 @@ describe("containsDashes", () => {
   it("returns false when dash is only in inline code", () => {
     const text = "Use `opt\u2014val` as the flag.";
     expect(containsDashes(text)).toBe(false);
+  });
+
+  it("returns false for whitespace-only input", () => {
+    expect(containsDashes("   \n\t  ")).toBe(false);
+  });
+
+  it("returns true when a single string contains both em-dash and en-dash", () => {
+    expect(containsDashes("em\u2014and en\u2013together")).toBe(true);
+  });
+
+  it("returns true when a dash sits right next to a fence boundary", () => {
+    // The dash is OUTSIDE the fence (immediately before the opening
+    // backticks), so it must still trip detection.
+    expect(containsDashes("alpha\u2014```\ncode\n```")).toBe(true);
   });
 });

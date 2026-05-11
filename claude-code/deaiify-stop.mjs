@@ -17,8 +17,10 @@
 // otherwise empty + exit 0.
 
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import process from "node:process";
 
-const BANNED_REASON =
+export const BANNED_REASON =
   "DO IT AGAIN, PAL. The previous message contained {offenders}. " +
   "NO LONG LINES! NO TWO SHORT LINES EITHER! I KNOW YOUR TRICKS!!! " +
   "Rewrite the previous message without those punctuation marks. Restructure " +
@@ -26,12 +28,12 @@ const BANNED_REASON =
   "colons, or sentence breaks instead. Never use ` -- ` as a substitute. " +
   "Then deliver the clean version.";
 
-function extractAssistantText(payload) {
+export function extractAssistantText(payload, { readFile = readFileSync } = {}) {
   const path = payload.transcript_path;
   if (!path) return "";
   let raw;
   try {
-    raw = readFileSync(path, "utf8");
+    raw = readFile(path, "utf8");
   } catch {
     return "";
   }
@@ -57,14 +59,14 @@ function extractAssistantText(payload) {
   return "";
 }
 
-function stripCode(text) {
+export function stripCode(text) {
   // Remove fenced code blocks (```...```) and inline code (`...`).
   return text
     .replace(/```[\s\S]*?```/g, "")
     .replace(/`[^`\n]*`/g, "");
 }
 
-function scan(text) {
+export function scan(text) {
   const stripped = stripCode(text);
   const offenders = [];
   if (/—/.test(stripped)) offenders.push("em-dash (—)");
@@ -77,23 +79,37 @@ function scan(text) {
   return offenders;
 }
 
-try {
-  const raw = readFileSync(0, "utf8");
-  if (!raw.trim()) process.exit(0);
-  const payload = JSON.parse(raw);
-
-  if (payload.stop_hook_active === true) process.exit(0);
-
-  const text = extractAssistantText(payload);
-  if (!text) process.exit(0);
-
-  const offenders = scan(text);
-  if (offenders.length === 0) process.exit(0);
-
+export function buildBlockResponse(offenders) {
   const reason = BANNED_REASON.replace("{offenders}", offenders.join(" and "));
-  process.stdout.write(JSON.stringify({ decision: "block", reason }));
-  process.exit(0);
-} catch {
-  // Silent fail. Never break the pipeline on hook error.
+  return { decision: "block", reason };
 }
-process.exit(0);
+
+export function run(payload) {
+  if (payload.stop_hook_active === true) return null;
+  const text = extractAssistantText(payload);
+  if (!text) return null;
+  const offenders = scan(text);
+  if (offenders.length === 0) return null;
+  return buildBlockResponse(offenders);
+}
+
+function main() {
+  try {
+    const raw = readFileSync(0, "utf8");
+    if (!raw.trim()) process.exit(0);
+    const payload = JSON.parse(raw);
+    const response = run(payload);
+    if (response) {
+      process.stdout.write(JSON.stringify(response));
+    }
+    process.exit(0);
+  } catch {
+    // Silent fail. Never break the pipeline on hook error.
+    process.exit(0);
+  }
+}
+
+// Only run as a script when invoked directly, not when imported by tests.
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main();
+}
