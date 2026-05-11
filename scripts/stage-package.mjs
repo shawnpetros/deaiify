@@ -10,6 +10,7 @@ const outDir = process.argv[2]
 const filesToCopy = [
   "dist/constants.js",
   "dist/index.js",
+  "dist/register.js",
   "dist/utils.js",
   "openclaw.json",
   "openclaw.plugin.json",

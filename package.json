@@ -8,6 +8,7 @@
     "build": "tsc",
     "prebuild": "rm -rf dist",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "stage-package": "node ./scripts/stage-package.mjs"
   },
   "peerDependencies": {
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@openclaw/plugin-sdk": "file:/opt/homebrew/lib/node_modules/openclaw/dist/plugin-sdk",
     "@types/node": "^20.10.0",
+    "@vitest/coverage-v8": "^1.0.0",
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
   },
